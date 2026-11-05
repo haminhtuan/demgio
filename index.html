@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm giờ</title>
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Đếm giờ">
+    <meta name="theme-color" content="#090d16">
+
+    <!-- Direct Asset Linking for Android & iOS with demgio.png -->
+    <link rel="icon" type="image/png" sizes="192x192" href="demgio.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="demgio.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="demgio.png">
+    <link rel="apple-touch-icon-precomposed" href="demgio.png">
+    <link rel="shortcut icon" type="image/png" href="demgio.png">
+
+    <!-- Inline Web App Manifest with SVG Stopwatch Icon (192x192 & 512x512) -->
+    <link rel="manifest" id="pwa-manifest">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f1f5f9;
+        }
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .font-sport {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d131f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .animate-rest-pulse {
+            animation: pulse-ring 1s infinite ease-in-out;
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-gray-800/80 bg-[#0c121e]/85 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- App Icon with demgio.png and SVG fallback -->
+                <div class="relative w-11 h-11 flex-shrink-0 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 p-[1.5px] shadow-lg shadow-emerald-500/15 border border-cyan-500/30 overflow-hidden flex items-center justify-center">
+                    <img src="demgio.png" alt="Đếm giờ" class="w-full h-full object-cover rounded-2xl" onerror="this.style.display='none'; document.getElementById('header-fallback-svg').classList.remove('hidden');">
+                    <svg id="header-fallback-svg" viewBox="0 0 100 100" class="w-full h-full drop-shadow hidden">
+                        <rect x="44" y="6" width="12" height="9" rx="3" fill="#94a3b8" stroke="#475569" stroke-width="1.5" />
+                        <line x1="50" y1="15" x2="50" y2="22" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+                        <rect x="22" y="16" width="9" height="6" rx="2" fill="#94a3b8" transform="rotate(-35 26 19)" />
+                        <rect x="69" y="14" width="9" height="6" rx="2" fill="#94a3b8" transform="rotate(35 73 17)" />
+                        <circle cx="50" cy="56" r="38" fill="#0f172a" stroke="#475569" stroke-width="3" />
+                        <circle cx="50" cy="56" r="34" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4 2.5" class="opacity-90" />
+                        <circle cx="50" cy="56" r="31" fill="#090e17" />
+                        <rect x="36" y="62" width="28" height="12" rx="3" fill="#042f2e" stroke="#10b981" stroke-width="1" />
+                        <text x="50" y="70.5" fill="#34d399" font-size="7" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">00:00</text>
+                        <circle cx="50" cy="43" r="8" fill="none" stroke="#334155" stroke-width="1" />
+                        <line x1="50" y1="43" x2="50" y2="38" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" />
+                        <line x1="50" y1="56" x2="50" y2="34" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="50" y1="56" x2="66" y2="50" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="50" cy="56" r="3" fill="#22c55e" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-wider text-white flex items-center gap-2 font-sport">
+                        ĐẾM GIỜ <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">PRO</span>
+                    </h1>
+                    <p class="text-xs text-gray-400">Đếm vòng & Thống kê luyện tập</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- PWA Install Button (Auto-shows when installable on Android) -->
+                <button id="pwa-install-btn" class="hidden px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 flex items-center gap-1.5 transition animate-pulse">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Cài đặt App</span>
+                </button>
+
+                <!-- Fullscreen Toggle Button -->
+                <button id="toggle-fullscreen-btn" class="p-2.5 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-gray-300 hover:text-cyan-400 transition flex items-center gap-1.5 text-xs font-medium border border-gray-700/60" title="Bật/Tắt Toàn màn hình (Ẩn thanh địa chỉ)">
+                    <i id="fullscreen-icon" data-lucide="maximize" class="w-4 h-4 text-cyan-400"></i>
+                    <span id="fullscreen-label" class="hidden sm:inline">Toàn màn hình</span>
+                </button>
+
+                <button id="toggle-sound-btn" class="p-2.5 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-gray-300 transition flex items-center gap-1.5 text-xs font-medium border border-gray-700/60" title="Bật/Tắt âm thanh">
+                    <i id="sound-icon" data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>
+                    <span id="sound-label" class="hidden sm:inline">Âm thanh: Bật</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- PWA Install Banner Notice on Android Mobile -->
+    <div id="pwa-install-banner" class="hidden bg-gradient-to-r from-cyan-950/80 via-emerald-950/80 to-gray-900 border-b border-cyan-500/30 px-4 py-2.5">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-cyan-200">
+                <i data-lucide="smartphone" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                <span>Cài đặt <strong>Đếm giờ</strong> vào điện thoại để chạy toàn màn hình offline mượt mà!</span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button id="banner-install-confirm-btn" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition shadow">
+                    Cài đặt ngay
+                </button>
+                <button id="banner-install-close-btn" class="p-1 rounded-md text-gray-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left / Top Column: Timer & Controls -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+
+            <!-- Timer Card -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#111927] to-[#0c121e] border border-cyan-900/40 shadow-2xl p-6 sm:p-8 flex flex-col items-center justify-center neon-glow-cyan">
+                
+                <!-- Status Badge -->
+                <div class="flex items-center justify-between w-full mb-4">
+                    <div id="status-badge" class="px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-800 text-gray-300 border border-gray-700 flex items-center gap-2">
+                        <span id="status-dot" class="w-2 h-2 rounded-full bg-gray-400"></span>
+                        <span id="status-text">SẴN SÀNG</span>
+                    </div>
+
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400 uppercase font-medium">Tổng thời gian</span>
+                        <div id="total-time-display" class="text-base sm:text-lg font-mono-num font-bold text-cyan-400">00:00</div>
+                    </div>
+                </div>
+
+                <!-- Main Lap Display (Giant Clock) -->
+                <div class="my-3 text-center relative w-full flex flex-col items-center justify-center">
+                    
+                    <div class="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-1 flex items-center justify-center gap-2">
+                        <i data-lucide="repeat" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Vòng Hiện Tại</span>
+                    </div>
+
+                    <div id="current-lap-indicator" class="text-2xl sm:text-3xl font-sport font-black text-emerald-400 mb-2 tracking-wide">
+                        VÒNG 1
+                    </div>
+
+                    <!-- Countdown Rest Overlay (3s) -->
+                    <div id="rest-overlay" class="hidden absolute inset-0 bg-[#090f19]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center z-20 border border-emerald-500/40">
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-300 animate-pulse">CHUẨN BỊ VÒNG MỚI</span>
+                        <div id="rest-countdown-number" class="text-7xl sm:text-8xl font-black font-sport text-emerald-400 animate-rest-pulse my-1 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]">
+                            3
+                        </div>
+                        <span class="text-xs text-gray-400">Nghỉ chuyển vòng trong 3 giây...</span>
+                    </div>
+
+                    <!-- Giant Digital Timer -->
+                    <div id="lap-time-display" class="text-6xl sm:text-7xl md:text-8xl font-black font-mono-num tracking-tight text-white drop-shadow-[0_8px_25px_rgba(6,182,212,0.2)] my-2">
+                        00:00
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-gray-400 font-mono-num">
+                        Định dạng: Phút : Giây
+                    </p>
+                </div>
+
+                <!-- Session Mini Badges -->
+                <div class="grid grid-cols-2 w-full gap-3 mt-4 pt-4 border-t border-gray-800">
+                    <div class="bg-gray-900/70 rounded-xl p-3 border border-gray-800/80 text-center">
+                        <span class="text-xs text-gray-400 block font-medium">Số vòng đã xong</span>
+                        <span id="completed-laps-count" class="text-xl font-bold font-mono-num text-emerald-400">0</span>
+                    </div>
+                    <div class="bg-gray-900/70 rounded-xl p-3 border border-gray-800/80 text-center">
+                        <span class="text-xs text-gray-400 block font-medium">Vòng dài nhất (buổi này)</span>
+                        <span id="max-lap-current" class="text-xl font-bold font-mono-num text-amber-400">--:--</span>
+                    </div>
+                </div>
+
+                <!-- Controls Button Group -->
+                <div class="w-full mt-6 flex flex-col gap-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Start / Pause / Resume Button -->
+                        <button id="btn-primary" class="h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i id="btn-primary-icon" data-lucide="play" class="w-5 h-5 fill-current"></i>
+                            <span id="btn-primary-text">BẮT ĐẦU</span>
+                        </button>
+
+                        <!-- Lap Button -->
+                        <button id="btn-lap" disabled class="h-14 rounded-2xl bg-gray-900 hover:bg-gray-850 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-base border border-emerald-500/40 flex items-center justify-center gap-2 transition cursor-pointer shadow-md">
+                            <i data-lucide="flag" class="w-5 h-5 text-cyan-400"></i>
+                            <span>HẾT VÒNG</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- End Session Button -->
+                        <button id="btn-finish" disabled class="h-12 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i>
+                            <span>KẾT THÚC BUỔI TẬP</span>
+                        </button>
+
+                        <!-- Reset Button -->
+                        <button id="btn-reset" class="h-12 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-gray-300 border border-gray-700/80 active:scale-[0.98] font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            <span>LÀM MỚI</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Current Session Lap Table -->
+            <div class="bg-[#0f1726] rounded-3xl border border-gray-800 p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="list-ordered" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Chi Tiết Các Vòng (Buổi Hiện Tại)</span>
+                    </h2>
+                    <span id="session-laps-counter" class="text-xs bg-gray-900 text-gray-300 px-2.5 py-1 rounded-full font-mono-num font-medium border border-gray-800">0 vòng</span>
+                </div>
+
+                <div class="overflow-x-auto max-h-56">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                <th class="py-2.5 px-3">Vòng</th>
+                                <th class="py-2.5 px-3">Thời gian vòng</th>
+                                <th class="py-2.5 px-3 text-right">Mốc tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="session-laps-tbody" class="divide-y divide-gray-800/60 font-mono-num text-xs sm:text-sm">
+                            <tr id="empty-session-row">
+                                <td colspan="3" class="py-8 text-center text-gray-500 font-sans">
+                                    Chưa có vòng nào được hoàn thành trong buổi tập này.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right / Bottom Column: Daily Stats, History & Backup -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- Today's Quick Summary Card with Detailed Lap List -->
+            <div class="bg-gradient-to-br from-gray-900 to-[#101b2b] rounded-3xl border border-gray-800 p-5 sm:p-6 shadow-xl relative overflow-hidden flex flex-col">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Thống Kê Hôm Nay (<span id="today-date-label">--</span>)</span>
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 text-center mb-5">
+                    <div class="p-3 bg-gray-900/60 rounded-2xl border border-gray-800">
+                        <span class="text-[11px] text-gray-400 block font-medium">Tổng vòng</span>
+                        <span id="today-total-laps" class="text-2xl font-black font-mono-num text-emerald-400">0</span>
+                    </div>
+
+                    <div class="p-3 bg-gray-900/60 rounded-2xl border border-gray-800">
+                        <span class="text-[11px] text-gray-400 block font-medium">Tổng thời gian</span>
+                        <span id="today-total-time" class="text-base sm:text-lg font-bold font-mono-num text-white leading-8">00:00</span>
+                    </div>
+
+                    <div class="p-3 bg-gray-900/60 rounded-2xl border border-gray-800">
+                        <span class="text-[11px] text-gray-400 block font-medium">Vòng dài nhất</span>
+                        <span id="today-max-lap" class="text-base sm:text-lg font-bold font-mono-num text-amber-400 leading-8">--:--</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Lap List for Today (Ordered Chronologically & Highlight Longest) -->
+                <div class="border-t border-gray-800/80 pt-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <span class="text-xs font-semibold text-gray-300 flex items-center gap-1.5 uppercase tracking-wide">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+                            <span>Chi tiết từng vòng hôm nay</span>
+                        </span>
+                        <span class="text-[11px] text-gray-400 font-mono-num">Theo thứ tự tập</span>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-56 pr-1">
+                        <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-800/80 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    <th class="py-2 px-2.5">Thứ tự</th>
+                                    <th class="py-2 px-2.5">Thời gian vòng</th>
+                                    <th class="py-2 px-2.5 text-right">Thời điểm / Buổi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="today-laps-tbody" class="divide-y divide-gray-800/50 font-mono-num text-xs">
+                                <tr id="empty-today-laps-row">
+                                    <td colspan="3" class="py-6 text-center text-gray-500 font-sans">
+                                        Chưa có vòng tập nào hoàn thành hôm nay.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Days Record Table -->
+            <div class="bg-[#0f1726] rounded-3xl border border-gray-800 p-5 shadow-xl flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+                        <span>Lịch Sử Luyện Tập Theo Ngày</span>
+                    </h2>
+                    
+                    <button id="btn-clear-history" class="text-xs text-rose-400 hover:text-rose-300 transition flex items-center gap-1 p-1 rounded-lg hover:bg-rose-500/10">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Xóa lịch sử</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto flex-1 max-h-[300px]">
+                    <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                <th class="py-2.5 px-3">Ngày</th>
+                                <th class="py-2.5 px-2 text-center">Số vòng</th>
+                                <th class="py-2.5 px-2 text-center">Tổng giờ</th>
+                                <th class="py-2.5 px-3 text-right">Vòng Max</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-days-tbody" class="divide-y divide-gray-800/60 font-mono-num">
+                            <tr id="empty-history-row">
+                                <td colspan="4" class="py-12 text-center text-gray-500 font-sans">
+                                    Chưa có dữ liệu ngày tập nào được lưu trữ. Hãy hoàn thành và kết thúc một buổi tập!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Backup & Restore Data Bar -->
+                <div class="mt-4 pt-4 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                    <span class="text-gray-400 flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Sao lưu & khôi phục dữ liệu:</span>
+                    </span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <!-- Export JSON Button -->
+                        <button id="btn-export-json" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-cyan-400 border border-cyan-500/30 hover:border-cyan-500/60 font-semibold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Xuất file</span>
+                        </button>
+                        <!-- Import JSON Button -->
+                        <button id="btn-import-trigger" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 font-semibold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                            <span>Nhập file</span>
+                        </button>
+                        <input type="file" id="import-json-file-input" accept=".json,application/json" class="hidden">
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal Xem Chi Tiết Ngày Tập -->
+    <div id="day-detail-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#111927] border border-cyan-500/30 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-800">
+                <div>
+                    <h3 id="modal-date-title" class="text-lg font-bold text-white flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-emerald-400"></i>
+                        <span>Chi tiết ngày --</span>
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-0.5">Danh sách các buổi và vòng tập đã hoàn thành</p>
+                </div>
+                <button id="modal-close-btn" class="p-2 rounded-xl bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="my-4 max-h-72 overflow-y-auto pr-1" id="modal-content-list">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <div class="pt-4 border-t border-gray-800 flex justify-end">
+                <button id="modal-close-btn-bottom" class="px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-sm transition">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 px-4 py-3 rounded-2xl bg-gray-900 border border-cyan-500/40 text-white shadow-2xl text-sm">
+        <i id="toast-icon" data-lucide="info" class="w-5 h-5 text-emerald-400"></i>
+        <span id="toast-message">Thông báo</span>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // --- Web Audio API Generator (No external MP3 files required) ---
+        class SoundEffects {
+            constructor() {
+                this.enabled = true;
+                this.audioCtx = null;
+            }
+
+            init() {
+                if (!this.audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.audioCtx = new AudioContext();
+                    }
+                }
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+            }
+
+            playBeep(frequency = 440, type = 'sine', duration = 0.15) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.audioCtx) return;
+
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(frequency, this.audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(this.audioCtx.currentTime + duration);
+                } catch (e) {
+                    console.warn("Audio error:", e);
+                }
+            }
+
+            startSound() {
+                this.playBeep(587.33, 'triangle', 0.2); // D5
+            }
+
+            lapSound() {
+                this.playBeep(659.25, 'sine', 0.2); // E5
+            }
+
+            countdownBeep() {
+                this.playBeep(440, 'sine', 0.12); // A4
+            }
+
+            goBeep() {
+                this.playBeep(880, 'triangle', 0.35); // A5
+            }
+
+            finishSound() {
+                if (!this.enabled) return;
+                this.init();
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C - E - G - C
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        this.playBeep(freq, 'triangle', 0.25);
+                    }, idx * 120);
+                });
+            }
+        }
+
+        const sound = new SoundEffects();
+
+        // --- Application State ---
+        const TIMER_STATE = {
+            IDLE: 'IDLE',
+            RUNNING: 'RUNNING',
+            PAUSED: 'PAUSED',
+            RESTING: 'RESTING' // 3s inter-lap rest
+        };
+
+        let currentState = TIMER_STATE.IDLE;
+        let sessionStartTime = null;
+        let totalElapsedSeconds = 0;
+        let currentLapElapsedSeconds = 0;
+        let currentLapNumber = 1;
+        let timerInterval = null;
+        let restCountdownInterval = null;
+        let restTimeRemaining = 3;
+
+        // Active session completed laps: array of { lapNumber, durationSeconds, totalSessionTimeSeconds }
+        let sessionLaps = [];
+
+        // --- DOM Elements ---
+        const lapTimeDisplay = document.getElementById('lap-time-display');
+        const totalTimeDisplay = document.getElementById('total-time-display');
+        const currentLapIndicator = document.getElementById('current-lap-indicator');
+        const statusBadge = document.getElementById('status-badge');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const restOverlay = document.getElementById('rest-overlay');
+        const restCountdownNumber = document.getElementById('rest-countdown-number');
+        const completedLapsCount = document.getElementById('completed-laps-count');
+        const maxLapCurrent = document.getElementById('max-lap-current');
+        const sessionLapsTbody = document.getElementById('session-laps-tbody');
+        const sessionLapsCounter = document.getElementById('session-laps-counter');
+
+        const btnPrimary = document.getElementById('btn-primary');
+        const btnPrimaryText = document.getElementById('btn-primary-text');
+        const btnPrimaryIcon = document.getElementById('btn-primary-icon');
+        const btnLap = document.getElementById('btn-lap');
+        const btnFinish = document.getElementById('btn-finish');
+        const btnReset = document.getElementById('btn-reset');
+
+        const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+        const soundIcon = document.getElementById('sound-icon');
+        const soundLabel = document.getElementById('sound-label');
+
+        // Fullscreen elements
+        const toggleFullscreenBtn = document.getElementById('toggle-fullscreen-btn');
+        const fullscreenIcon = document.getElementById('fullscreen-icon');
+        const fullscreenLabel = document.getElementById('fullscreen-label');
+
+        const todayDateLabel = document.getElementById('today-date-label');
+        const todayTotalLaps = document.getElementById('today-total-laps');
+        const todayTotalTime = document.getElementById('today-total-time');
+        const todayMaxLap = document.getElementById('today-max-lap');
+        const todayLapsTbody = document.getElementById('today-laps-tbody');
+        const historyDaysTbody = document.getElementById('history-days-tbody');
+        const btnClearHistory = document.getElementById('btn-clear-history');
+
+        // Backup / Restore elements
+        const btnExportJson = document.getElementById('btn-export-json');
+        const btnImportTrigger = document.getElementById('btn-import-trigger');
+        const importJsonFileInput = document.getElementById('import-json-file-input');
+
+        // Modal Elements
+        const dayDetailModal = document.getElementById('day-detail-modal');
+        const modalDateTitle = document.getElementById('modal-date-title');
+        const modalContentList = document.getElementById('modal-content-list');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalCloseBtnBottom = document.getElementById('modal-close-btn-bottom');
+
+        // Toast
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // PWA Install elements
+        const pwaInstallBtn = document.getElementById('pwa-install-btn');
+        const pwaInstallBanner = document.getElementById('pwa-install-banner');
+        const bannerInstallConfirmBtn = document.getElementById('banner-install-confirm-btn');
+        const bannerInstallCloseBtn = document.getElementById('banner-install-close-btn');
+        let deferredPwaPrompt = null;
+
+        // --- Progressive Web App (PWA) Self-Generating Setup ---
+        (function setupInlinePWA() {
+            const manifestObject = {
+                name: "Đếm giờ",
+                short_name: "Đếm giờ",
+                description: "Bộ đếm thời gian tập luyện và thống kê số vòng chuyên nghiệp",
+                start_url: window.location.href,
+                scope: window.location.href,
+                display: "standalone",
+                orientation: "portrait",
+                background_color: "#090d16",
+                theme_color: "#06b6d4",
+                icons: [
+                    {
+                        src: "demgio.png",
+                        sizes: "192x192",
+                        type: "image/png",
+                        purpose: "any maskable"
+                    },
+                    {
+                        src: "demgio.png",
+                        sizes: "512x512",
+                        type: "image/png",
+                        purpose: "any maskable"
+                    }
+                ]
+            };
+
+            const manifestBlob = new Blob([JSON.stringify(manifestObject)], { type: 'application/manifest+json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            const manifestLink = document.getElementById('pwa-manifest');
+            if (manifestLink) {
+                manifestLink.setAttribute('href', manifestUrl);
+            }
+
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'dem-gio-pwa-v1';
+                    self.addEventListener('install', (event) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (event) => {
+                        event.waitUntil(self.clients.claim());
+                    });
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            fetch(event.request).catch(() => caches.match(event.request))
+                        );
+                    });
+                `;
+                try {
+                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(swBlob);
+                    navigator.serviceWorker.register(swUrl)
+                        .then(() => console.log('SW Registered'))
+                        .catch(err => console.log('SW Note:', err));
+                } catch (e) {
+                    console.log('SW Blob not supported in this context:', e);
+                }
+            }
+        })();
+
+        // Listen for Android Chrome PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPwaPrompt = e;
+            pwaInstallBtn.classList.remove('hidden');
+            pwaInstallBanner.classList.remove('hidden');
+            lucide.createIcons();
+        });
+
+        async function triggerPwaInstall() {
+            if (!deferredPwaPrompt) {
+                showToast("Dùng menu Chrome ⋮ > 'Cài đặt ứng dụng' để thêm vào màn hình!");
+                return;
+            }
+            deferredPwaPrompt.prompt();
+            const { outcome } = await deferredPwaPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast("Đang cài đặt Đếm giờ vào màn hình...");
+            }
+            deferredPwaPrompt = null;
+            pwaInstallBtn.classList.add('hidden');
+            pwaInstallBanner.classList.add('hidden');
+        }
+
+        pwaInstallBtn.addEventListener('click', triggerPwaInstall);
+        bannerInstallConfirmBtn.addEventListener('click', triggerPwaInstall);
+        bannerInstallCloseBtn.addEventListener('click', () => {
+            pwaInstallBanner.classList.add('hidden');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            showToast("Đã cài đặt ứng dụng Đếm giờ thành công!");
+            pwaInstallBtn.classList.add('hidden');
+            pwaInstallBanner.classList.add('hidden');
+            deferredPwaPrompt = null;
+        });
+
+        // --- Utilities ---
+        function formatMMSS(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function formatDurationDetailed(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            if (h > 0) {
+                return `${h}h ${m}m ${s}s`;
+            }
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function getTodayDateString() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function formatDateVN(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function showToast(msg) {
+            toastMessage.textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2500);
+        }
+
+        // --- LocalStorage History Management ---
+        const STORAGE_KEY = 'workout_lap_timer_daily_records_v1';
+
+        function loadHistoryFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                console.error("Lỗi đọc storage", e);
+                return {};
+            }
+        }
+
+        function saveHistoryToStorage(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.error("Lỗi ghi storage", e);
+            }
+        }
+
+        function recordCompletedSession(lapsList, totalSessionSec) {
+            if (!lapsList || lapsList.length === 0) return;
+
+            const history = loadHistoryFromStorage();
+            const today = getTodayDateString();
+
+            if (!history[today]) {
+                history[today] = {
+                    date: today,
+                    totalLaps: 0,
+                    totalSeconds: 0,
+                    maxLapSeconds: 0,
+                    sessions: []
+                };
+            }
+
+            const dayRecord = history[today];
+            const sessionLapsCount = lapsList.length;
+            const sessionMaxLap = Math.max(...lapsList.map(l => l.durationSeconds), 0);
+
+            dayRecord.totalLaps += sessionLapsCount;
+            dayRecord.totalSeconds += totalSessionSec;
+            if (sessionMaxLap > dayRecord.maxLapSeconds) {
+                dayRecord.maxLapSeconds = sessionMaxLap;
+            }
+
+            dayRecord.sessions.push({
+                timestamp: Date.now(),
+                totalSeconds: totalSessionSec,
+                laps: [...lapsList]
+            });
+
+            saveHistoryToStorage(history);
+            renderHistoryUI();
+        }
+
+        // --- Render UI Functions ---
+        function updateDisplayClocks() {
+            lapTimeDisplay.textContent = formatMMSS(currentLapElapsedSeconds);
+            totalTimeDisplay.textContent = formatMMSS(totalElapsedSeconds);
+            currentLapIndicator.textContent = `VÒNG ${currentLapNumber}`;
+        }
+
+        function updateStatusUI() {
+            statusBadge.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 border';
+
+            switch (currentState) {
+                case TIMER_STATE.IDLE:
+                    statusBadge.classList.add('bg-gray-800', 'text-gray-300', 'border-gray-700');
+                    statusDot.className = 'w-2 h-2 rounded-full bg-gray-400';
+                    statusText.textContent = 'SẴN SÀNG';
+
+                    btnPrimary.className = 'h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition cursor-pointer';
+                    btnPrimaryText.textContent = 'BẮT ĐẦU';
+                    btnPrimaryIcon.setAttribute('data-lucide', 'play');
+
+                    btnLap.disabled = true;
+                    btnFinish.disabled = true;
+                    restOverlay.classList.add('hidden');
+                    break;
+
+                case TIMER_STATE.RUNNING:
+                    statusBadge.classList.add('bg-emerald-950/60', 'text-emerald-400', 'border-emerald-500/40');
+                    statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
+                    statusText.textContent = 'ĐANG ĐẾM';
+
+                    btnPrimary.className = 'h-14 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 transition cursor-pointer';
+                    btnPrimaryText.textContent = 'TẠM DỪNG';
+                    btnPrimaryIcon.setAttribute('data-lucide', 'pause');
+
+                    btnLap.disabled = false;
+                    btnFinish.disabled = false;
+                    restOverlay.classList.add('hidden');
+                    break;
+
+                case TIMER_STATE.PAUSED:
+                    statusBadge.classList.add('bg-yellow-950/60', 'text-yellow-400', 'border-yellow-500/40');
+                    statusDot.className = 'w-2 h-2 rounded-full bg-yellow-400';
+                    statusText.textContent = 'TẠM DỪNG';
+
+                    btnPrimary.className = 'h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer';
+                    btnPrimaryText.textContent = 'TIẾP TỤC';
+                    btnPrimaryIcon.setAttribute('data-lucide', 'play');
+
+                    btnLap.disabled = true;
+                    btnFinish.disabled = false;
+                    restOverlay.classList.add('hidden');
+                    break;
+
+                case TIMER_STATE.RESTING:
+                    statusBadge.classList.add('bg-orange-950/70', 'text-orange-400', 'border-orange-500/40');
+                    statusDot.className = 'w-2 h-2 rounded-full bg-orange-400 animate-pulse';
+                    statusText.textContent = 'NGHỈ CHUYỂN VÒNG (3S)';
+
+                    btnPrimary.disabled = true;
+                    btnLap.disabled = true;
+                    btnFinish.disabled = true;
+                    restOverlay.classList.remove('hidden');
+                    break;
+            }
+            lucide.createIcons();
+        }
+
+        function renderSessionLapsTable() {
+            sessionLapsCounter.textContent = `${sessionLaps.length} vòng`;
+            completedLapsCount.textContent = sessionLaps.length;
+
+            if (sessionLaps.length === 0) {
+                sessionLapsTbody.innerHTML = `
+                    <tr id="empty-session-row">
+                        <td colspan="3" class="py-8 text-center text-gray-500 font-sans">
+                            Chưa có vòng nào được hoàn thành trong buổi tập này.
+                        </td>
+                    </tr>
+                `;
+                maxLapCurrent.textContent = '--:--';
+                return;
+            }
+
+            let maxSec = Math.max(...sessionLaps.map(l => l.durationSeconds));
+            let minSec = Math.min(...sessionLaps.map(l => l.durationSeconds));
+            maxLapCurrent.textContent = formatMMSS(maxSec);
+
+            let html = '';
+            for (let i = sessionLaps.length - 1; i >= 0; i--) {
+                const lap = sessionLaps[i];
+                const isLongest = lap.durationSeconds === maxSec;
+                const isShortest = sessionLaps.length > 1 && lap.durationSeconds === minSec;
+
+                let badge = '';
+                if (isLongest) {
+                    badge = '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-medium border border-amber-500/30">Dài nhất</span>';
+                } else if (isShortest) {
+                    badge = '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30">Nhanh nhất</span>';
+                }
+
+                html += `
+                    <tr class="hover:bg-gray-800/40 transition">
+                        <td class="py-3 px-3 font-bold text-white flex items-center gap-2">
+                            <span>Vòng ${lap.lapNumber}</span>
+                            ${badge}
+                        </td>
+                        <td class="py-3 px-3 text-cyan-300 font-semibold">${formatMMSS(lap.durationSeconds)}</td>
+                        <td class="py-3 px-3 text-right text-gray-400">${formatMMSS(lap.totalSessionTimeSeconds)}</td>
+                    </tr>
+                `;
+            }
+            sessionLapsTbody.innerHTML = html;
+        }
+
+        function renderHistoryUI() {
+            const history = loadHistoryFromStorage();
+            const today = getTodayDateString();
+
+            todayDateLabel.textContent = formatDateVN(today);
+
+            const todayRecord = history[today];
+            if (todayRecord) {
+                todayTotalLaps.textContent = todayRecord.totalLaps;
+                todayTotalTime.textContent = formatDurationDetailed(todayRecord.totalSeconds);
+                todayMaxLap.textContent = todayRecord.maxLapSeconds > 0 ? formatMMSS(todayRecord.maxLapSeconds) : '--:--';
+
+                const allTodayLaps = [];
+                if (todayRecord.sessions && todayRecord.sessions.length > 0) {
+                    todayRecord.sessions.forEach((session, sessionIdx) => {
+                        const timeStr = session.timestamp ? new Date(session.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : `Buổi ${sessionIdx + 1}`;
+                        if (session.laps && session.laps.length > 0) {
+                            session.laps.forEach(lap => {
+                                allTodayLaps.push({
+                                    lapNumberInSession: lap.lapNumber,
+                                    durationSeconds: lap.durationSeconds,
+                                    sessionTime: timeStr,
+                                    sessionIndex: sessionIdx + 1
+                                });
+                            });
+                        }
+                    });
+                }
+
+                if (allTodayLaps.length > 0) {
+                    const maxSecToday = todayRecord.maxLapSeconds;
+                    let lapsHtml = '';
+
+                    allTodayLaps.forEach((lap, index) => {
+                        const orderNumber = index + 1;
+                        const isLongest = lap.durationSeconds === maxSecToday && maxSecToday > 0;
+
+                        if (isLongest) {
+                            lapsHtml += `
+                                <tr class="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent border-l-4 border-amber-400 font-medium">
+                                    <td class="py-2 px-2.5 text-white font-bold flex items-center gap-1.5">
+                                        <span class="w-5 h-5 rounded-full bg-amber-400 text-gray-950 flex items-center justify-center font-black text-[11px]">${orderNumber}</span>
+                                        <span>Vòng ${orderNumber}</span>
+                                    </td>
+                                    <td class="py-2 px-2.5 text-amber-300 font-bold text-sm">
+                                        <div class="flex items-center gap-1.5">
+                                            <span>${formatMMSS(lap.durationSeconds)}</span>
+                                            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/40">
+                                                <i data-lucide="flame" class="w-3 h-3 text-amber-400 fill-amber-400"></i> Dài nhất
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-2.5 text-right text-gray-300">
+                                        <span class="bg-gray-800/80 px-2 py-0.5 rounded border border-gray-700/60">${lap.sessionTime}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            lapsHtml += `
+                                <tr class="hover:bg-gray-800/40 transition">
+                                    <td class="py-2 px-2.5 text-gray-200">
+                                        <span class="text-gray-400 mr-1.5 font-bold">#${orderNumber}</span> Vòng ${orderNumber}
+                                    </td>
+                                    <td class="py-2 px-2.5 text-cyan-300 font-semibold">${formatMMSS(lap.durationSeconds)}</td>
+                                    <td class="py-2 px-2.5 text-right text-gray-400 text-[11px]">${lap.sessionTime}</td>
+                                </tr>
+                            `;
+                        }
+                    });
+
+                    todayLapsTbody.innerHTML = lapsHtml;
+                } else {
+                    todayLapsTbody.innerHTML = `
+                        <tr id="empty-today-laps-row">
+                            <td colspan="3" class="py-6 text-center text-gray-500 font-sans">
+                                Chưa có vòng tập nào hoàn thành hôm nay.
+                            </td>
+                        </tr>
+                    `;
+                }
+
+            } else {
+                todayTotalLaps.textContent = '0';
+                todayTotalTime.textContent = '00:00';
+                todayMaxLap.textContent = '--:--';
+                todayLapsTbody.innerHTML = `
+                    <tr id="empty-today-laps-row">
+                        <td colspan="3" class="py-6 text-center text-gray-500 font-sans">
+                            Chưa có vòng tập nào hoàn thành hôm nay.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            const dates = Object.keys(history).sort((a, b) => b.localeCompare(a));
+
+            if (dates.length === 0) {
+                historyDaysTbody.innerHTML = `
+                    <tr id="empty-history-row">
+                        <td colspan="4" class="py-12 text-center text-gray-500 font-sans">
+                            Chưa có dữ liệu ngày tập nào được lưu trữ. Hãy hoàn thành và kết thúc một buổi tập!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            dates.forEach(dateKey => {
+                const item = history[dateKey];
+                html += `
+                    <tr class="hover:bg-gray-800/50 transition cursor-pointer group" onclick="openDayDetail('${dateKey}')" title="Bấm để xem chi tiết buổi tập ngày ${formatDateVN(dateKey)}">
+                        <td class="py-3 px-3 font-semibold text-white group-hover:text-cyan-400 transition flex items-center gap-1.5">
+                            <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-gray-500 group-hover:text-cyan-400"></i>
+                            <span>${formatDateVN(dateKey)}</span>
+                        </td>
+                        <td class="py-3 px-2 text-center text-emerald-400 font-bold">${item.totalLaps}</td>
+                        <td class="py-3 px-2 text-center text-gray-300">${formatDurationDetailed(item.totalSeconds)}</td>
+                        <td class="py-3 px-3 text-right text-amber-400 font-bold">${item.maxLapSeconds > 0 ? formatMMSS(item.maxLapSeconds) : '--:--'}</td>
+                    </tr>
+                `;
+            });
+
+            historyDaysTbody.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- Core Timer Operations ---
+        function startTimer() {
+            sound.init();
+            sound.startSound();
+
+            currentState = TIMER_STATE.RUNNING;
+            btnPrimary.disabled = false;
+            updateStatusUI();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                currentLapElapsedSeconds++;
+                totalElapsedSeconds++;
+                updateDisplayClocks();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            currentState = TIMER_STATE.PAUSED;
+            clearInterval(timerInterval);
+            updateStatusUI();
+        }
+
+        function handleLap() {
+            if (currentState !== TIMER_STATE.RUNNING) return;
+
+            sound.lapSound();
+
+            const finishedLap = {
+                lapNumber: currentLapNumber,
+                durationSeconds: currentLapElapsedSeconds,
+                totalSessionTimeSeconds: totalElapsedSeconds
+            };
+            sessionLaps.push(finishedLap);
+            renderSessionLapsTable();
+
+            clearInterval(timerInterval);
+            currentState = TIMER_STATE.RESTING;
+            updateStatusUI();
+
+            restTimeRemaining = 3;
+            restCountdownNumber.textContent = restTimeRemaining;
+
+            sound.countdownBeep();
+
+            clearInterval(restCountdownInterval);
+            restCountdownInterval = setInterval(() => {
+                restTimeRemaining--;
+
+                if (restTimeRemaining > 0) {
+                    restCountdownNumber.textContent = restTimeRemaining;
+                    sound.countdownBeep();
+                } else {
+                    clearInterval(restCountdownInterval);
+                    sound.goBeep();
+
+                    currentLapNumber++;
+                    currentLapElapsedSeconds = 0;
+                    updateDisplayClocks();
+
+                    currentState = TIMER_STATE.RUNNING;
+                    updateStatusUI();
+
+                    timerInterval = setInterval(() => {
+                        currentLapElapsedSeconds++;
+                        totalElapsedSeconds++;
+                        updateDisplayClocks();
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function endSession() {
+            if (currentState === TIMER_STATE.IDLE && sessionLaps.length === 0) {
+                showToast("Chưa có dữ liệu buổi tập để kết thúc!");
+                return;
+            }
+
+            if (currentLapElapsedSeconds > 0 && (currentState === TIMER_STATE.RUNNING || currentState === TIMER_STATE.PAUSED)) {
+                sessionLaps.push({
+                    lapNumber: currentLapNumber,
+                    durationSeconds: currentLapElapsedSeconds,
+                    totalSessionTimeSeconds: totalElapsedSeconds
+                });
+            }
+
+            clearInterval(timerInterval);
+            clearInterval(restCountdownInterval);
+
+            if (sessionLaps.length > 0) {
+                sound.finishSound();
+                recordCompletedSession(sessionLaps, totalElapsedSeconds);
+                showToast(`Đã lưu buổi tập: ${sessionLaps.length} vòng, tổng ${formatMMSS(totalElapsedSeconds)}!`);
+            } else {
+                showToast("Đã kết thúc phiên tập.");
+            }
+
+            resetSession(false);
+        }
+
+        function resetSession(notify = true) {
+            clearInterval(timerInterval);
+            clearInterval(restCountdownInterval);
+
+            currentState = TIMER_STATE.IDLE;
+            totalElapsedSeconds = 0;
+            currentLapElapsedSeconds = 0;
+            currentLapNumber = 1;
+            sessionLaps = [];
+
+            updateDisplayClocks();
+            renderSessionLapsTable();
+            updateStatusUI();
+
+            if (notify) {
+                showToast("Đã làm mới bộ đếm thời gian.");
+            }
+        }
+
+        // --- Backup & Restore Logic (JSON) ---
+        function exportWorkoutHistory() {
+            const history = loadHistoryFromStorage();
+            if (Object.keys(history).length === 0) {
+                showToast("Chưa có dữ liệu luyện tập nào để xuất!");
+                return;
+            }
+
+            const jsonStr = JSON.stringify(history, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = getTodayDateString();
+            a.href = url;
+            a.download = `dem-gio-backup-${dateStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Đã xuất file sao lưu JSON thành công!");
+        }
+
+        function importWorkoutHistory(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (typeof imported !== 'object' || imported === null) {
+                        throw new Error("Dữ liệu không đúng cấu trúc.");
+                    }
+
+                    const daysCount = Object.keys(imported).length;
+                    if (daysCount === 0) {
+                        showToast("File sao lưu không có dữ liệu ngày tập!");
+                        return;
+                    }
+
+                    saveHistoryToStorage(imported);
+                    renderHistoryUI();
+                    showToast(`Khôi phục thành công ${daysCount} ngày luyện tập!`);
+                } catch (err) {
+                    showToast("Lỗi: File JSON không hợp lệ!");
+                    console.error(err);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // --- Details Modal for a Specific Day ---
+        window.openDayDetail = function(dateKey) {
+            const history = loadHistoryFromStorage();
+            const record = history[dateKey];
+            if (!record) return;
+
+            modalDateTitle.innerHTML = `
+                <i data-lucide="calendar" class="w-5 h-5 text-emerald-400"></i>
+                <span>Chi tiết ngày ${formatDateVN(dateKey)}</span>
+            `;
+
+            let contentHtml = `
+                <div class="grid grid-cols-3 gap-2 bg-gray-900/80 p-3 rounded-2xl border border-gray-800 text-center mb-4">
+                    <div>
+                        <span class="text-[11px] text-gray-400 block">Tổng vòng</span>
+                        <span class="text-base font-bold text-emerald-400">${record.totalLaps}</span>
+                    </div>
+                    <div>
+                        <span class="text-[11px] text-gray-400 block">Tổng thời gian</span>
+                        <span class="text-base font-bold text-white">${formatDurationDetailed(record.totalSeconds)}</span>
+                    </div>
+                    <div>
+                        <span class="text-[11px] text-gray-400 block">Vòng Max</span>
+                        <span class="text-base font-bold text-amber-400">${formatMMSS(record.maxLapSeconds)}</span>
+                    </div>
+                </div>
+            `;
+
+            if (record.sessions && record.sessions.length > 0) {
+                contentHtml += `<div class="space-y-4">`;
+                record.sessions.forEach((sess, sIdx) => {
+                    const sessTime = new Date(sess.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    contentHtml += `
+                        <div class="bg-gray-800/40 rounded-2xl p-3 border border-gray-700/60">
+                            <div class="flex items-center justify-between text-xs font-semibold text-gray-300 pb-2 border-b border-gray-700/60 mb-2">
+                                <span class="text-emerald-400 font-bold">Buổi tập #${sIdx + 1} (${sessTime})</span>
+                                <span class="font-mono-num text-gray-400">Tổng: ${formatMMSS(sess.totalSeconds)} (${sess.laps.length} vòng)</span>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                ${sess.laps.map(l => `
+                                    <div class="bg-gray-900/60 p-2 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
+                                        <span class="text-gray-400">Vòng ${l.lapNumber}:</span>
+                                        <span class="font-mono-num font-bold text-white">${formatMMSS(l.durationSeconds)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                contentHtml += `</div>`;
+            } else {
+                contentHtml += `<p class="text-sm text-gray-400 text-center py-4">Không có chi tiết từng buổi.</p>`;
+            }
+
+            modalContentList.innerHTML = contentHtml;
+            dayDetailModal.classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        function closeDayDetailModal() {
+            dayDetailModal.classList.add('hidden');
+        }
+
+        // --- Fullscreen Toggle Logic (Hides browser URL and navigation bar) ---
+        function toggleFullScreen() {
+            const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            
+            if (!isFull) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        showToast("Trình duyệt không cho phép toàn màn hình.");
+                    });
+                } else if (elem.webkitRequestFullscreen) { // Safari / WebKit Android
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        function updateFullscreenUI() {
+            const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            if (isFull) {
+                fullscreenIcon.setAttribute('data-lucide', 'minimize');
+                fullscreenIcon.classList.remove('text-cyan-400');
+                fullscreenIcon.classList.add('text-amber-400');
+                fullscreenLabel.textContent = 'Thu nhỏ';
+                showToast("Đã ẩn thanh địa chỉ (Toàn màn hình)");
+            } else {
+                fullscreenIcon.setAttribute('data-lucide', 'maximize');
+                fullscreenIcon.classList.remove('text-amber-400');
+                fullscreenIcon.classList.add('text-cyan-400');
+                fullscreenLabel.textContent = 'Toàn màn hình';
+            }
+            lucide.createIcons();
+        }
+
+        // Fullscreen change events
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+            document.addEventListener(evt, updateFullscreenUI);
+        });
+
+        // --- Event Listeners ---
+        toggleFullscreenBtn.addEventListener('click', toggleFullScreen);
+
+        btnPrimary.addEventListener('click', () => {
+            if (currentState === TIMER_STATE.IDLE || currentState === TIMER_STATE.PAUSED) {
+                startTimer();
+            } else if (currentState === TIMER_STATE.RUNNING) {
+                pauseTimer();
+            }
+        });
+
+        btnLap.addEventListener('click', handleLap);
+        btnFinish.addEventListener('click', endSession);
+        btnReset.addEventListener('click', () => {
+            if (currentState === TIMER_STATE.RUNNING || currentState === TIMER_STATE.RESTING) {
+                if (confirm("Buổi tập đang diễn ra. Bạn có chắc muốn hủy và làm mới lại từ đầu không?")) {
+                    resetSession(true);
+                }
+            } else {
+                resetSession(true);
+            }
+        });
+
+        // Backup / Restore Event Listeners
+        btnExportJson.addEventListener('click', exportWorkoutHistory);
+        btnImportTrigger.addEventListener('click', () => {
+            importJsonFileInput.click();
+        });
+        importJsonFileInput.addEventListener('change', importWorkoutHistory);
+
+        // Toggle Sound Button
+        toggleSoundBtn.addEventListener('click', () => {
+            sound.enabled = !sound.enabled;
+            if (sound.enabled) {
+                sound.init();
+                soundIcon.setAttribute('data-lucide', 'volume-2');
+                soundIcon.classList.remove('text-gray-500');
+                soundIcon.classList.add('text-emerald-400');
+                soundLabel.textContent = 'Âm thanh: Bật';
+                showToast("Đã bật âm thanh tín hiệu");
+            } else {
+                soundIcon.setAttribute('data-lucide', 'volume-x');
+                soundIcon.classList.remove('text-emerald-400');
+                soundIcon.classList.add('text-gray-500');
+                soundLabel.textContent = 'Âm thanh: Tắt';
+                showToast("Đã tắt âm thanh");
+            }
+            lucide.createIcons();
+        });
+
+        // Clear History
+        btnClearHistory.addEventListener('click', () => {
+            const history = loadHistoryFromStorage();
+            if (Object.keys(history).length === 0) {
+                showToast("Lịch sử đang trống!");
+                return;
+            }
+
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử ngày tập không? Hành động này không thể hoàn tác!")) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderHistoryUI();
+                showToast("Đã xóa sạch lịch sử ngày tập!");
+            }
+        });
+
+        // Modal close listeners
+        modalCloseBtn.addEventListener('click', closeDayDetailModal);
+        modalCloseBtnBottom.addEventListener('click', closeDayDetailModal);
+        dayDetailModal.addEventListener('click', (e) => {
+            if (e.target === dayDetailModal) closeDayDetailModal();
+        });
+
+        // Keyboard Shortcut: Space for Lap / Start
+        window.addEventListener('keydown', (e) => {
+            if (!dayDetailModal.classList.contains('hidden')) return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (currentState === TIMER_STATE.RUNNING) {
+                    handleLap();
+                } else if (currentState === TIMER_STATE.IDLE || currentState === TIMER_STATE.PAUSED) {
+                    startTimer();
+                }
+            }
+        });
+
+        // Initialize on load
+        window.onload = function () {
+            lucide.createIcons();
+            updateDisplayClocks();
+            updateStatusUI();
+            renderSessionLapsTable();
+            renderHistoryUI();
+        };
+    </script>
+</body>
+</html>
